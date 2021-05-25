@@ -1,2 +1,3 @@
-mod style;
-mod grid;
+pub mod style;
+pub mod grid;
+pub mod shell;

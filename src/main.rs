@@ -1,11 +1,13 @@
 //! This example showcases a simple native custom widget that draws a circle.
 
-use neovui::circle::Circle;
+use neovui::widget::shell::{Message, Window};
+use neovui::widget::style;
 use iced::{
-    slider, button, executor, keyboard, pane_grid, scrollable, Align, Application,
-    Button, Clipboard, Color, Column, Command, Container, Element,
-    HorizontalAlignment, Length, PaneGrid, Row, Scrollable, Settings,
-    Subscription, Slider, Text,
+    executor, keyboard, pane_grid, Application,
+    Length,
+    Clipboard, Color, Command, Container, Element,
+    PaneGrid, Row, Settings,
+    Subscription, Text,
 };
 use iced_native::{event, subscription, Event};
 
@@ -14,22 +16,9 @@ pub fn main() -> iced::Result {
 }
 
 struct Example {
-    panes: pane_grid::State<Content>,
+    panes: pane_grid::State<Window>,
     panes_created: usize,
     focus: Option<pane_grid::Pane>,
-}
-
-#[derive(Debug, Clone, Copy)]
-enum Message {
-    RadiusChanged(f32),
-    Split(pane_grid::Axis, pane_grid::Pane),
-    SplitFocused(pane_grid::Axis),
-    FocusAdjacent(pane_grid::Direction),
-    Clicked(pane_grid::Pane),
-    Dragged(pane_grid::DragEvent),
-    Resized(pane_grid::ResizeEvent),
-    Close(pane_grid::Pane),
-    CloseFocused,
 }
 
 impl Application for Example {
@@ -38,7 +27,7 @@ impl Application for Example {
     type Flags = ();
 
     fn new(_flags: ()) -> (Self, Command<Message>) {
-        let (panes, _) = pane_grid::State::new(Content::new(0));
+        let (panes, _) = pane_grid::State::new(Window::new(0));
 
         (
             Example {
@@ -72,7 +61,7 @@ impl Application for Example {
                 let result = self.panes.split(
                     axis,
                     &pane,
-                    Content::new(self.panes_created),
+                    Window::new(self.panes_created),
                 );
 
                 if let Some((pane, _)) = result {
@@ -86,7 +75,7 @@ impl Application for Example {
                     let result = self.panes.split(
                         axis,
                         &pane,
-                        Content::new(self.panes_created),
+                        Window::new(self.panes_created),
                     );
 
                     if let Some((pane, _)) = result {
@@ -224,204 +213,4 @@ fn handle_hotkey(key_code: keyboard::KeyCode) -> Option<Message> {
     }
 }
 
-struct Content {
-    id: usize,
-    scroll: scrollable::State,
-    radius: f32,
-    slider: slider::State,
-    split_horizontally: button::State,
-    split_vertically: button::State,
-    close: button::State,
-}
 
-impl Content {
-    fn new(id: usize) -> Self {
-        Content {
-            id,
-            scroll: scrollable::State::new(),
-            radius: 50.0,
-            slider: slider::State::new(),
-            split_horizontally: button::State::new(),
-            split_vertically: button::State::new(),
-            close: button::State::new(),
-        }
-    }
-    fn view(
-        &mut self,
-        pane: pane_grid::Pane,
-        total_panes: usize,
-    ) -> Element<Message> {
-        let Content {
-            scroll,
-            radius,
-            slider,
-            split_horizontally,
-            split_vertically,
-            close,
-            ..
-        } = self;
-
-        let button = |state, label, message, style| {
-            Button::new(
-                state,
-                Text::new(label)
-                    .width(Length::Fill)
-                    .horizontal_alignment(HorizontalAlignment::Center)
-                    .size(16),
-            )
-            .width(Length::Fill)
-            .padding(8)
-            .on_press(message)
-            .style(style)
-        };
-
-        let mut controls = Column::new()
-            .spacing(5)
-            .max_width(150)
-            .push(button(
-                split_horizontally,
-                "Split horizontally",
-                Message::Split(pane_grid::Axis::Horizontal, pane),
-                style::Button::Primary,
-            ))
-            .push(button(
-                split_vertically,
-                "Split vertically",
-                Message::Split(pane_grid::Axis::Vertical, pane),
-                style::Button::Primary,
-            ))
-            .push(Circle::new(*radius))
-            .push(Text::new(format!("Radius: {:.2}", *radius)))
-            .push(Slider::new(
-                slider,
-                1.0..=100.0,
-                *radius,
-                Message::RadiusChanged,
-                )
-                .step(0.01),
-            );
-
-        if total_panes > 1 {
-            controls = controls.push(button(
-                close,
-                "Close",
-                Message::Close(pane),
-                style::Button::Destructive,
-            ));
-        }
-
-        let content = Scrollable::new(scroll)
-            .width(Length::Fill)
-            .spacing(10)
-            .align_items(Align::Center)
-            .push(controls);
-
-        Container::new(content)
-            .width(Length::Fill)
-            .height(Length::Fill)
-            .padding(5)
-            .center_y()
-            .into()
-    }
-}
-
-mod style {
-    use iced::{button, container, Background, Color, Vector};
-
-    const SURFACE: Color = Color::from_rgb(
-        0xF2 as f32 / 255.0,
-        0xF3 as f32 / 255.0,
-        0xF5 as f32 / 255.0,
-    );
-
-    const ACTIVE: Color = Color::from_rgb(
-        0x72 as f32 / 255.0,
-        0x89 as f32 / 255.0,
-        0xDA as f32 / 255.0,
-    );
-
-    const HOVERED: Color = Color::from_rgb(
-        0x67 as f32 / 255.0,
-        0x7B as f32 / 255.0,
-        0xC4 as f32 / 255.0,
-    );
-
-    pub struct TitleBar {
-        pub is_focused: bool,
-    }
-
-    impl container::StyleSheet for TitleBar {
-        fn style(&self) -> container::Style {
-            let pane = Pane {
-                is_focused: self.is_focused,
-            }
-            .style();
-
-            container::Style {
-                text_color: Some(Color::WHITE),
-                background: Some(pane.border_color.into()),
-                ..Default::default()
-            }
-        }
-    }
-
-    pub struct Pane {
-        pub is_focused: bool,
-    }
-
-    impl container::StyleSheet for Pane {
-        fn style(&self) -> container::Style {
-            container::Style {
-                background: Some(Background::Color(SURFACE)),
-                border_width: 2.0,
-                border_color: if self.is_focused {
-                    Color::BLACK
-                } else {
-                    Color::from_rgb(0.7, 0.7, 0.7)
-                },
-                ..Default::default()
-            }
-        }
-    }
-
-    pub enum Button {
-        Primary,
-        Destructive,
-    }
-
-    impl button::StyleSheet for Button {
-        fn active(&self) -> button::Style {
-            let (background, text_color) = match self {
-                Button::Primary => (Some(ACTIVE), Color::WHITE),
-                Button::Destructive => {
-                    (None, Color::from_rgb8(0xFF, 0x47, 0x47))
-                }
-            };
-
-            button::Style {
-                text_color,
-                background: background.map(Background::Color),
-                border_radius: 5.0,
-                shadow_offset: Vector::new(0.0, 0.0),
-                ..button::Style::default()
-            }
-        }
-
-        fn hovered(&self) -> button::Style {
-            let active = self.active();
-
-            let background = match self {
-                Button::Primary => Some(HOVERED),
-                Button::Destructive => Some(Color {
-                    a: 0.2,
-                    ..active.text_color
-                }),
-            };
-
-            button::Style {
-                background: background.map(Background::Color),
-                ..active
-            }
-        }
-    }
-}
