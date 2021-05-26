@@ -1,8 +1,7 @@
 use iced::{button, container, Background, Color, Vector};
 
 #[derive(PartialEq, Debug, Clone)]
-pub struct
-Colors {
+pub struct Colors {
     pub foregroud: Option<Color>,
     pub backgroud: Option<Color>,
 }
@@ -20,25 +19,32 @@ pub struct Style {
 impl Style {
     pub fn foregroud(&self, default_colors: &Colors) -> Color {
         if self.reverse {
-            self.colors.backgroud.clone()
+            self.colors
+                .backgroud
+                .clone()
                 .unwrap_or_else(|| default_colors.backgroud.clone().unwrap())
         } else {
-            self.colors.foregroud.clone()
+            self.colors
+                .foregroud
+                .clone()
                 .unwrap_or_else(|| default_colors.foregroud.clone().unwrap())
         }
     }
 
     pub fn backgroud(&self, default_colors: &Colors) -> Color {
         if self.reverse {
-            self.colors.foregroud.clone()
+            self.colors
+                .foregroud
+                .clone()
                 .unwrap_or_else(|| default_colors.foregroud.clone().unwrap())
         } else {
-            self.colors.backgroud.clone()
+            self.colors
+                .backgroud
+                .clone()
                 .unwrap_or_else(|| default_colors.backgroud.clone().unwrap())
         }
     }
 }
-
 
 const SURFACE: Color = Color::from_rgb(
     0xF2 as f32 / 255.0,
@@ -105,9 +111,7 @@ impl button::StyleSheet for Button {
     fn active(&self) -> button::Style {
         let (background, text_color) = match self {
             Button::Primary => (Some(ACTIVE), Color::WHITE),
-            Button::Destructive => {
-                (None, Color::from_rgb8(0xFF, 0x47, 0x47))
-            }
+            Button::Destructive => (None, Color::from_rgb8(0xFF, 0x47, 0x47)),
         };
 
         button::Style {
@@ -137,5 +141,4 @@ impl button::StyleSheet for Button {
     }
 }
 #[cfg(test)]
-mod tests {
-}
+mod tests {}

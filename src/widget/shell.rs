@@ -1,10 +1,10 @@
 use iced::{
-scrollable, slider, button, pane_grid, 
-Button, Slider, Column, Element, Text, Scrollable, Container,
-Length, HorizontalAlignment, Align };
+    button, pane_grid, scrollable, slider, Align, Button, Column, Container, Element,
+    HorizontalAlignment, Length, Scrollable, Slider, Text,
+};
 
-use crate::circle::Circle;
-use crate::widget::style;
+use super::circle::Circle;
+use super::style::{self};
 
 #[derive(Debug, Clone, Copy)]
 pub enum Message {
@@ -41,11 +41,7 @@ impl Window {
             close: button::State::new(),
         }
     }
-    pub fn view(
-        &mut self,
-        pane: pane_grid::Pane,
-        total_panes: usize,
-    ) -> Element<Message> {
+    pub fn view(&mut self, pane: pane_grid::Pane, total_panes: usize) -> Element<Message> {
         let Window {
             scroll,
             radius,
@@ -87,14 +83,7 @@ impl Window {
             ))
             .push(Circle::new(*radius))
             .push(Text::new(format!("Radius: {:.2}", *radius)))
-            .push(Slider::new(
-                slider,
-                1.0..=100.0,
-                *radius,
-                Message::RadiusChanged,
-                )
-                .step(0.01),
-            );
+            .push(Slider::new(slider, 1.0..=100.0, *radius, Message::RadiusChanged).step(0.01));
 
         if total_panes > 1 {
             controls = controls.push(button(

@@ -1,15 +1,12 @@
 //! This example showcases a simple native custom widget that draws a circle.
 
-use neovui::widget::shell::{Message, Window};
-use neovui::widget::style;
 use iced::{
-    executor, keyboard, pane_grid, Application,
-    Length,
-    Clipboard, Color, Command, Container, Element,
-    PaneGrid, Row, Settings,
-    Subscription, Text,
+    executor, keyboard, pane_grid, Application, Clipboard, Color, Command, Container, Element,
+    Length, PaneGrid, Row, Settings, Subscription, Text,
 };
 use iced_native::{event, subscription, Event};
+use neovui::widget::shell::{Message, Window};
+use neovui::widget::style;
 
 pub fn main() -> iced::Result {
     Example::run(Settings::default())
@@ -43,11 +40,7 @@ impl Application for Example {
         String::from("Pane grid - Iced")
     }
 
-    fn update(
-        &mut self,
-        message: Message,
-        _clipboard: &mut Clipboard,
-    ) -> Command<Message> {
+    fn update(&mut self, message: Message, _clipboard: &mut Clipboard) -> Command<Message> {
         match message {
             Message::RadiusChanged(radius) => {
                 if let Some(pane) = self.focus {
@@ -55,14 +48,11 @@ impl Application for Example {
                         c.radius = radius;
                     }
                 }
-                
             }
             Message::Split(axis, pane) => {
-                let result = self.panes.split(
-                    axis,
-                    &pane,
-                    Window::new(self.panes_created),
-                );
+                let result = self
+                    .panes
+                    .split(axis, &pane, Window::new(self.panes_created));
 
                 if let Some((pane, _)) = result {
                     self.focus = Some(pane);
@@ -72,11 +62,9 @@ impl Application for Example {
             }
             Message::SplitFocused(axis) => {
                 if let Some(pane) = self.focus {
-                    let result = self.panes.split(
-                        axis,
-                        &pane,
-                        Window::new(self.panes_created),
-                    );
+                    let result = self
+                        .panes
+                        .split(axis, &pane, Window::new(self.panes_created));
 
                     if let Some((pane, _)) = result {
                         self.focus = Some(pane);
@@ -87,9 +75,7 @@ impl Application for Example {
             }
             Message::FocusAdjacent(direction) => {
                 if let Some(pane) = self.focus {
-                    if let Some(adjacent) =
-                        self.panes.adjacent(&pane, direction)
-                    {
+                    if let Some(adjacent) = self.panes.adjacent(&pane, direction) {
                         self.focus = Some(adjacent);
                     }
                 }
@@ -100,10 +86,7 @@ impl Application for Example {
             Message::Resized(pane_grid::ResizeEvent { split, ratio }) => {
                 self.panes.resize(&split, ratio);
             }
-            Message::Dragged(pane_grid::DragEvent::Dropped {
-                pane,
-                target,
-            }) => {
+            Message::Dragged(pane_grid::DragEvent::Dropped { pane, target }) => {
                 self.panes.swap(&pane, &target);
             }
             Message::Dragged(_) => {}
@@ -212,5 +195,3 @@ fn handle_hotkey(key_code: keyboard::KeyCode) -> Option<Message> {
         _ => direction.map(Message::FocusAdjacent),
     }
 }
-
-
